@@ -1,0 +1,7 @@
+# some commands and tools to remember
+
+
+# wget_from_list
+#-nc no clobber, doesnt overwrite files
+#-i from list
+#wget -nc -i  $pathtofile
