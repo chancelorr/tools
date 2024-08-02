@@ -4,6 +4,7 @@
 # Date: 2024-07-01
 # Description: This script looks in the directory provided and runs Tyler's tide program for every 
 #   available granule, then outputs them into a subdirectory named 'tides'
+# example call ./get_tides.sh -I linear -T CATS2008-v2023 -O ~/Applications/buttressing/data/is2/ATL11_Cp-D_test
 
 start_dir=$(pwd)
 
