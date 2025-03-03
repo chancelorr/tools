@@ -4,18 +4,29 @@
 # Date: 2024-07-01
 # Description: This script looks in the directory provided and runs Tyler's tide program for every 
 #   available granule, then outputs them into a subdirectory named 'tides'
+# example call ./get_tides.sh -I bilinear -T CATS2008-v2023 -O ~/Applications/buttressing/data/is2/ATL11_Cp-D_test
 
 start_dir=$(pwd)
 
 # Function to display usage information
 usage() {
-  echo "Usage: $0 [-O <search_directory>] [-T <tide_model>] [-I <interpolate_method>] [-h]"
-  echo
+  echo "Usage: $0 [-O <search_directory>] [-T <tide_model>] [-I <interpolate_method>]" 
+  echo " [-S <short_name>] [-E <extrapolate_dist>] [-f <granule_name>] [-h]"
+  echo " "
+  echo "Upper case options are passed to compute_tides_ICESat2_ATLXX.py"
+  echo "lower case options are for this script"
+  echo " "
   echo "Options:"
   echo "  -O Specify the output directory."
   echo "  -I Spatial interpolation method."
+  echo "  -E Extrapolate using nearest neigbors, distance in km"
   echo "  -T Specify tide model."
+  echo "  -S Specify data product shortname."
+  echo "  -f Specify single granule."
   echo "  -h Display this help message."
+  echo " "
+  echo " Example: get_tides.sh -I linear -T CATS2008-v2023 -O ~/Applications/buttressing/data/is2/ATL11_Cp-D_test"
+  echo " "
   exit 1
 }
 
@@ -23,15 +34,21 @@ usage() {
 directory=''
 int_method=''
 tide_model=''
+granule=''
+ext_dist=''
+short_name=''
 
 # Parse options using getopts
-while getopts "O:I:T:h" opt; 
+while getopts "O:I:E:T:S:f:h" opt; 
 do
   case "$opt" 
   in
     O) directory=${OPTARG};;
     I) int_method=${OPTARG};;
+    E) ext_dist=${OPTARG};;
     T) tide_model=${OPTARG};;
+    S) short_name=${OPTARG};;
+    f) granule=${OPTARG};;
     h) usage;;
     *) usage;;
     \?) usage;;
@@ -77,16 +94,24 @@ compute_tides() {
 	local out_dir=$tide_dir
 	local model=$tide_model
 	local interp=$int_method
+	local extrap=$ext_dist
+	local short_name=$short_name
 	#echo "this ${this}"
 	#echo "in_dir ${in_dir}"
 	#echo "out_dir ${tide_dir}"
 	#echo "model ${tide_model}"
 	#echo "interp ${interp}"
-	echo "compute_tides_ICESat2_ATL11.py ${this} -D./ -O${out_dir} -T${model} -I${int_method}"
-	compute_tides_ICESat2_ATL11.py ${this} -D./ -O${out_dir} -T${model} -I${int_method}
+	echo "compute_tides_ICESat2_${short_name}.py ${this} -D./ -O${out_dir} -T${model} -I${interp}"
+	compute_tides_ICESat2_${short_name}.py ${this} -D./ -O${out_dir} -T${model} -I${interp}
 }
 
 
+if [ -n "$granule" ]; then
+	echo "Processing single granule: ${granule}"
+	file=${directory}/${granule}
+	compute_tides $file
+	exit 1
+fi
 
 # Main script execution
 for file in "$directory"/*.h5; do
